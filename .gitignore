@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+runtime/
+logs/
+.env*
+*.sqlite3*
+cloudflared.exe
+*.exe
+*.log
+

@@ -1,0 +1,14 @@
+{
+  "optimal_threshold": 0.73,
+  "default_threshold": 0.5,
+  "cost_ratio_fp_to_fn": 4.0,
+  "cost_function": "4*FP + 1*FN",
+  "val_cost_at_optimal": 280.0,
+  "val_f1_at_optimal": 0.7724,
+  "val_roc_auc": 0.9159,
+  "tuned_on": "validation_set",
+  "methodology": "Validation Cost-Sensitive Threshold Tuning (Leak-free)",
+  "model_version": "1.2.0",
+  "threshold_config_version": "1.2.0",
+  "decision_engine_version": "1.2.0"
+}

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>VIETCREDIT · Thẩm định tín dụng</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/cockpit.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/cockpit"><span class="brand-mark">V</span> VIETCREDIT <small>WORKSPACE</small></a>
+    <div class="session"><span id="connectionStatus" class="badge">Chưa đăng nhập</span><span id="currentUser"></span><button id="logoutButton" class="quiet" hidden>Đăng xuất</button></div>
+  </header>
+  <section id="loginView" class="login-wrap">
+    <div class="login-card">
+      <p class="eyebrow">KHÔNG GIAN THẨM ĐỊNH</p>
+      <h1>Quyết định có căn cứ.<br>Giải thích minh bạch.</h1>
+      <p class="muted">Đăng nhập bằng tài khoản nội bộ. Mỗi thao tác được kiểm tra theo quyền của bạn.</p>
+      <form id="loginForm">
+        <label>Tên đăng nhập<input id="username" name="username" required autocomplete="username" maxlength="80"></label>
+        <label>Mật khẩu<input id="password" name="password" type="password" required autocomplete="current-password" maxlength="256"></label>
+        <button class="primary" type="submit">Đăng nhập</button>
+        <p id="loginError" class="error" role="alert"></p>
+      </form>
+      <p class="fine">Chưa có tài khoản? Liên hệ quản trị viên để được cấp quyền.</p>
+    </div>
+  </section>
+  <div id="workspace" class="workspace" hidden>
+    <aside class="sidebar">
+      <p class="eyebrow">NGHIỆP VỤ</p>
+      <nav aria-label="Điều hướng chính">
+        <button data-panel="assessment" class="nav-item active">01 <span>Thẩm định hồ sơ</span></button>
+        <button data-panel="cases" class="nav-item">06 <span>Hồ sơ đã lưu</span></button>
+        <button data-panel="queue" class="nav-item">02 <span>Danh sách mẫu</span></button>
+        <button data-panel="stress" class="nav-item" data-role="risk">03 <span>Phân tích độ nhạy</span></button>
+        <button data-panel="committee" class="nav-item">04 <span>Quyết định hội đồng</span></button>
+        <button data-panel="audit" class="nav-item" data-role="audit">05 <span>Nhật ký kiểm toán</span></button>
+      </nav>
+      <div class="model-card"><span class="eyebrow">MODEL ĐANG DÙNG</span><strong id="modelName">XGBoost-CreditRisk</strong><span>54 đặc trưng · TreeSHAP</span><p>Hỗ trợ ra quyết định trên dữ liệu mô phỏng. Chưa dùng để giải ngân thực.</p></div>
+    </aside>
+    <main>
+      <div id="notification" role="status" aria-live="polite" hidden></div>
+      <section id="panel-assessment" class="panel">
+        <div class="page-heading"><div><p class="eyebrow">THẨM ĐỊNH TÍN DỤNG</p><h1>Từ hồ sơ đến quyết định</h1><p class="muted">Kết quả từ mô hình đã xác minh và chính sách tín dụng hiện hành.</p></div><button id="loadSample" class="secondary">Nạp hồ sơ mẫu tốt</button></div>
+        <div class="assessment-layout">
+          <form id="applicationForm" class="card">
+            <div class="card-heading"><h2>Thông tin hồ sơ</h2><button id="resetForm" type="button" class="quiet">Hồ sơ mới</button></div>
+            <div class="fields"><label>Mã hồ sơ<input id="ma_ho_so" name="ma_ho_so" required maxlength="80" pattern="[A-Za-z0-9_-]+" placeholder="HS-2026-001"></label><label>Họ và tên<input id="ho_ten" name="ho_ten" required maxlength="160" autocomplete="off"></label></div>
+            <div id="applicationFields"></div>
+            <div class="policy"><label>Chính sách ngưỡng<select id="thresholdPolicy"><option value="optimal">Ngưỡng chính thức</option><option value="default">Ngưỡng so sánh</option></select></label><p class="fine">Ngưỡng so sánh chỉ dành cho Quản trị rủi ro và không dùng để phê duyệt chính thức.</p></div>
+            <button id="assessButton" class="primary" type="submit">Chạy thẩm định</button>
+            <p id="dirtyNotice" class="fine">Điền đầy đủ thông tin hoặc nạp một hồ sơ mẫu.</p>
+          </form>
+          <div class="result-column">
+            <article id="emptyResult" class="card empty-state"><span class="empty-symbol">↗</span><h2>Chờ hồ sơ thẩm định</h2><p>Kết quả, chính sách và giải thích sẽ xuất hiện sau khi máy chủ hoàn tất xử lý.</p></article>
+            <article id="resultCard" class="card" hidden>
+              <div class="card-heading"><h2>Kết quả thẩm định</h2><span id="runBadge" class="badge"></span></div>
+              <p id="decisionLabel" class="decision"></p>
+              <div class="metrics"><div><span class="muted">Xác suất phê duyệt của model</span><strong id="probability"></strong></div><div><span class="muted">Ngưỡng áp dụng</span><strong id="appliedThreshold"></strong></div></div>
+              <p id="riskTier"></p><p id="policyReason" class="notice"></p><p id="recommendation"></p>
+              <dl class="metadata"><dt>Mã lần thẩm định</dt><dd id="requestId"></dd><dt>Thời điểm máy chủ</dt><dd id="assessmentTime"></dd></dl>
+              <button id="toCommittee" type="button" class="secondary">Xem quyết định hội đồng</button>
+            </article>
+            <article id="shapCard" class="card" hidden>
+              <div class="card-heading"><h2>Vì sao model cho điểm này?</h2><span class="badge">TreeSHAP</span></div>
+              <p class="fine">Đóng góp theo log-odds. SHAP giải thích xác suất của model; quy tắc cứng có thể từ chối dù xác suất cao.</p>
+              <div id="waterfall" class="chart"></div>
+              <p id="shapMath" class="formula"></p>
+              <details><summary>Xem toàn bộ đóng góp</summary><div class="table-scroll"><table><thead><tr><th>Đặc trưng</th><th>SHAP (log-odds)</th></tr></thead><tbody id="shapRows"></tbody></table></div></details>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section id="panel-queue" class="panel" hidden>
+        <div class="page-heading"><div><p class="eyebrow">DỮ LIỆU DEMO</p><h1>Danh sách hồ sơ mẫu</h1><p class="muted">14 hồ sơ tổng hợp dùng để kiểm tra quy trình; không phải khách hàng thực.</p></div><button id="exportQueue" class="secondary">Xuất Excel</button></div>
+        <div class="card"><div class="toolbar"><label class="search">Tìm mã hoặc tên<input id="queueSearch" type="search" placeholder="Tìm hồ sơ…"></label><button id="batchButton" class="primary">Thẩm định hồ sơ đã chọn</button></div><div class="table-scroll"><table><thead><tr><th><input id="selectAll" type="checkbox" aria-label="Chọn tất cả hồ sơ hiển thị"></th><th>Mã hồ sơ / khách hàng</th><th>Khoản vay</th><th>CIC / nhóm nợ</th><th></th></tr></thead><tbody id="queueRows"></tbody></table></div></div>
+        <article id="batchResults" class="card" hidden><h2>Kết quả theo lô</h2><p id="batchSummary"></p><div class="table-scroll"><table><thead><tr><th>Mã hồ sơ</th><th>Xác suất</th><th>Kết quả</th><th>Trạng thái</th></tr></thead><tbody id="batchRows"></tbody></table></div></article>
+      </section>
+      <section id="panel-stress" class="panel" hidden>
+        <div class="page-heading"><div><p class="eyebrow">QUẢN TRỊ RỦI RO</p><h1>Phân tích độ nhạy</h1><p class="muted">Quan sát thay đổi xác suất và quyết định khi giả định tài chính thay đổi.</p></div></div>
+        <div class="card"><p class="notice">Không suy diễn xác suất phê duyệt thành PD, tỷ lệ nợ xấu hoặc mức dự phòng. Kịch bản không ghi đè kết quả thẩm định chính thức.</p><form id="stressForm"><div class="fields four"><label>Thu nhập giảm (%)<input id="stressIncome" type="number" min="0" max="50" step="1" value="15" required></label><label>Lãi suất tăng (điểm %)<input id="stressRate" type="number" min="0" max="10" step="0.1" value="2" required></label><label>Tài sản giảm (%)<input id="stressCollateral" type="number" min="0" max="50" step="1" value="20" required></label><label>CIC giảm (điểm)<input id="stressCic" type="number" min="0" max="200" step="1" value="30" required></label></div><div class="toolbar"><button id="stressOne" class="primary" type="submit">Phân tích hồ sơ đang nhập</button><button id="stressPortfolio" class="secondary" type="button">Phân tích 14 hồ sơ mẫu</button></div></form><div id="stressOutput" class="stress-output" hidden></div></div>
+      </section>
+      <section id="panel-committee" class="panel" hidden>
+        <div class="page-heading"><div><p class="eyebrow">PHÊ DUYỆT CÓ TRUY NGUYÊN</p><h1>Quyết định hội đồng</h1><p class="muted">Quyết định gắn với lần thẩm định mới nhất trong 24 giờ và phiên bản hiện hành. Người đã thẩm định hồ sơ phải chuyển cho chủ tịch khác ghi quyết định.</p></div></div>
+        <div class="card"><form id="lookupForm" class="toolbar"><label class="search">Tra cứu kết quả đã lưu<input id="lookupCase" required maxlength="80" placeholder="Mã hồ sơ"></label><button type="submit" class="secondary">Mở kết quả mới nhất</button></form><p id="committeeContext" class="notice">Chọn một hồ sơ đã thẩm định để tiếp tục.</p>
+          <form id="committeeForm"><div class="fields"><label>Quyết định<select id="finalDecision" required><option value="">Chọn quyết định</option><option value="PHÊ DUYỆT">PHÊ DUYỆT</option><option value="TỪ CHỐI">TỪ CHỐI</option><option value="BỔ SUNG HỒ SƠ">BỔ SUNG HỒ SƠ</option></select></label><label>Hạn mức chấp thuận (VNĐ)<input id="approvedLimit" type="number" min="0" max="10000000000" step="1" required></label><label>Lãi suất ghi nhận (%/năm)<input id="interestRate" type="number" min="0" max="50" step="0.01" value="8.5" required></label></div><p class="fine">Đây là ghi nhận quyết định nội bộ, chưa phải chữ ký số có chứng thư. Thay đổi lãi suất chỉ là điều khoản ghi nhận, không tái tính model.</p><button id="saveDecision" class="primary" type="submit" disabled>Lưu quyết định</button></form>
+          <div id="savedDecision" hidden><h2>Quyết định đã lưu</h2><p id="savedDecisionText"></p><button id="printDecision" class="secondary">In bản ghi</button></div>
+        </div>
+        <div id="coreCard" class="card" hidden><h2>Mô phỏng Core Banking</h2><p class="notice">Không chuyển tiền và không kết nối hệ thống ngân hàng.</p><form id="coreForm" class="toolbar"><label class="search">Số tài khoản mô phỏng<input id="accountNumber" inputmode="numeric" pattern="[0-9]{6,24}" minlength="6" maxlength="24" required autocomplete="off"></label><button id="simulateCore" type="submit" class="secondary">Ghi nhận mô phỏng</button></form><p id="coreResult"></p></div>
+      </section>
+      <section id="panel-audit" class="panel" hidden><div class="page-heading"><div><p class="eyebrow">TRUY NGUYÊN QUYẾT ĐỊNH</p><h1>Nhật ký kiểm toán</h1><p class="muted">Bản ghi mới được lưu cùng giao dịch. Nội dung tự do trong log lịch sử được ẩn khi hiển thị.</p></div><button id="refreshAudit" class="secondary">Làm mới</button></div><div class="card table-scroll"><table><thead><tr><th>Thời gian</th><th>Mã hồ sơ</th><th>Sự kiện</th><th>Quyết định</th><th>Người thực hiện</th><th>Chính thức</th></tr></thead><tbody id="auditRows"></tbody></table></div></section>
+      <section id="panel-cases" class="panel" hidden>
+        <div class="page-heading"><div><p class="eyebrow">QUẢN LÝ HỒ SƠ</p><h1>Hồ sơ đã lưu</h1><p class="muted">Kết quả và lịch sử thẩm định được lưu trên máy chủ. Thẩm định viên chỉ xem hồ sơ do mình khởi tạo.</p></div></div>
+        <div class="card"><form id="caseSearchForm" class="toolbar"><label class="search">Tìm theo mã hồ sơ<input id="caseSearch" maxlength="80" placeholder="Nhập mã hồ sơ…"></label><button id="searchCases" class="secondary">Tìm / Làm mới</button></form>
+        <p id="caseSummary" role="status"></p><div class="table-scroll"><table><thead><tr><th>Mã hồ sơ</th><th>Lần chạy</th><th>Thời gian</th><th>Khoản vay</th><th>Xác suất</th><th>Kết quả</th><th>Hội đồng (lần mới nhất)</th><th>Thao tác</th></tr></thead><tbody id="caseRows"></tbody></table></div>
+        <div class="toolbar"><button id="casesPrev" class="secondary">Trang trước</button><button id="casesNext" class="secondary">Trang sau</button></div></div>
+        <article id="caseHistory" class="card" hidden><h2 id="historyTitle">Lịch sử thẩm định</h2><p class="fine">Mỗi lần chạy giữ lại dữ liệu đầu vào và kết quả riêng. Họ tên không được lưu trong bản ghi thẩm định.</p><div id="historyRows"></div><div class="toolbar"><button id="historyPrev" class="secondary">Lịch sử trước</button><button id="historyNext" class="secondary">Lịch sử tiếp</button></div></article>
+      </section>
+      <footer>VIETCREDIT · Decision Support · Dữ liệu mô phỏng · Không giải ngân thực</footer>
+    </main>
+  </div>
+</body>
+</html>

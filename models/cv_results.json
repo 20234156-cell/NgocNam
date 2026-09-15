@@ -1,0 +1,26 @@
+{
+  "Baseline (Logistic Regression)": {
+    "ROC-AUC": "0.9215 ± 0.0041",
+    "F1-Score": "0.8440",
+    "Accuracy": "0.8410",
+    "Precision": "0.8234",
+    "Recall": "0.8662",
+    "raw_mean_auc": 0.9215458838602876
+  },
+  "Random Forest": {
+    "ROC-AUC": "0.9128 ± 0.0057",
+    "F1-Score": "0.8324",
+    "Accuracy": "0.8319",
+    "Precision": "0.8254",
+    "Recall": "0.8403",
+    "raw_mean_auc": 0.9127631228350653
+  },
+  "XGBoost (Gradient Boosting)": {
+    "ROC-AUC": "0.9178 ± 0.0044",
+    "F1-Score": "0.8375",
+    "Accuracy": "0.8357",
+    "Precision": "0.8239",
+    "Recall": "0.8523",
+    "raw_mean_auc": 0.9177645117948195
+  }
+}

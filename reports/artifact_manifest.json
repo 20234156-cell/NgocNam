@@ -1,0 +1,12 @@
+{
+  "model_version": "1.2.0",
+  "description": "Baseline hashes verified during the read-only audit. Protect this manifest together with application code; it is not a digital signature.",
+  "sha256": {
+    "best_model.joblib": "efa02e58e68d08e0e0686940623ea583eb728f1db55d9d150d2723ba75c02633",
+    "complete_pipeline.joblib": "65b5ba1313f2c8998601fc4eaa4f4e70e9782063b182c70e09122783f56561cf",
+    "cv_results.json": "95f7c5b7ce8ecfa4ca1260b1e055adfcdee644817ca308466e6e570b146516fc",
+    "feature_metadata.joblib": "3be8a4ef3418fa704cb047cd885f6690395bd1f2257ae8cf8ab9957919727c97",
+    "preprocessor.joblib": "3d773b4ed050173a8a173e0aeeac5ed3181467d22108095fa2cf9d54e207fbcc",
+    "threshold_config.json": "826e08ab337aec9793a841448cc67305227e6cd67c026d0ce5b8dfe16b12e9d1"
+  }
+}

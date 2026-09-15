@@ -1,0 +1,13 @@
+﻿.git
+.pytest_cache
+**/__pycache__
+.venv
+runtime
+logs
+scratch
+data
+notebooks
+cloudflared*
+.env*
+tests
+reports/figures
