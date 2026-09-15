@@ -39,7 +39,7 @@ best_model = decision_engine.best_model
 feature_names = decision_engine.feature_names
 
 FIELD_NAME_VI = {key: value["description"] for key, value in FIELD_CONSTRAINTS.items()}
-PUBLIC = {"/", "/cockpit", "/ui", "/health", "/auth/login"}
+PUBLIC = {"/", "/cockpit", "/ui", "/health", "/auth/login", "/favicon.ico", "/favicon.svg", "/logo.svg"}
 RISK_ROUTES = {"/simulate-stress", "/simulate-stress/portfolio"}
 AUDIT_ROUTES = {"/audit-logs"}
 
@@ -117,6 +117,14 @@ def root_info(request: Request):
 @app.get("/ui")
 def ui():
     return FileResponse(ROOT / "app" / "cockpit.html")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+@app.get("/favicon.svg", include_in_schema=False)
+@app.get("/logo.svg", include_in_schema=False)
+def favicon():
+    return FileResponse(ROOT / "app" / "logo.svg", media_type="image/svg+xml")
+
 
 
 @app.get("/health")
