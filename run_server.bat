@@ -20,9 +20,20 @@ exit /b 1
 :start_server
 set "PORT=8001"
 echo ====================================================================
-echo  VIETCREDIT SERVER DANG KHOI DONG:
+echo  VIETCREDIT - He thong Tham dinh Tin dung
 echo  Link truy cap: http://127.0.0.1:8001/cockpit
 echo ====================================================================
+
+netstat -ano | findstr /r /c:":8001 .*LISTENING" >nul 2>&1
+if not errorlevel 1 (
+    echo [THONG BAO] Server da dang chay san tren cong 8001!
+    echo Dang mo trinh duyet den giao dien...
+    start "" "http://127.0.0.1:8001/cockpit"
+    echo Nhan phim bat ky de dong cua so nay...
+    pause >nul
+    exit /b 0
+)
+
 start "" "http://127.0.0.1:8001/cockpit"
 %SERVER_PYTHON% -m uvicorn api.main:app --host 127.0.0.1 --port 8001 --no-server-header
 set "SERVER_EXIT=%ERRORLEVEL%"
