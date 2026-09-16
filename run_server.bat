@@ -18,11 +18,15 @@ pause
 exit /b 1
 
 :start_server
-if not defined PORT set "PORT=8001"
-echo VIETCREDIT - http://127.0.0.1:%PORT%/cockpit
-echo Create an account if needed: %SERVER_PYTHON% -m src.auth username --role "Loan Officer"
-%SERVER_PYTHON% -m uvicorn api.main:app --host 127.0.0.1 --port %PORT% --no-server-header
+set "PORT=8001"
+echo ====================================================================
+echo  VIETCREDIT SERVER DANG KHOI DONG:
+echo  Link truy cap: http://127.0.0.1:8001/cockpit
+echo ====================================================================
+start "" "http://127.0.0.1:8001/cockpit"
+%SERVER_PYTHON% -m uvicorn api.main:app --host 127.0.0.1 --port 8001 --no-server-header
 set "SERVER_EXIT=%ERRORLEVEL%"
 pause
 exit /b %SERVER_EXIT%
+
 
